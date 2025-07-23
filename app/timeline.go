@@ -54,6 +54,11 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 	ts.Timelines.SetMaxItemPerPage(int(h / 6))
 }
 
+func (ts *TimelineScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
+	_, h := screen.Size()
+	ts.Timelines.SetMaxItemPerPage(int(h / 6))
+}
+
 func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx ApplicationContext) {
 	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 

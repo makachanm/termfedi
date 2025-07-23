@@ -102,6 +102,7 @@ func (t *TerminalMainApp) Mainloop() {
 		switch event.(type) {
 		case *tcell.EventResize:
 			need_full_redraw = true
+			t.scenes[t.currunt_scene].WindowChangedScene(t.screen, t.appctx)
 		}
 
 		if need_full_redraw {
