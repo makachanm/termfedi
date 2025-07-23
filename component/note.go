@@ -43,10 +43,10 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 			h_text := htmls.Token().Data
 			width, _ := ctx.Size()
 			if len(h_text) >= width {
-				result.WriteString(h_text[:maxheight])
+				result.WriteString(h_text[:width])
 				render_targets = append(render_targets, result.String())
 				result.Reset()
-				result.WriteString(h_text[maxheight:])
+				result.WriteString(h_text[width:])
 			} else {
 				result.WriteString(h_text)
 			}
