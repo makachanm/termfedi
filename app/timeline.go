@@ -84,7 +84,7 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 	_, h := screen.Size()
 	ts.Timelines.SetMaxItemPerPage(int(h / 6))
 
-	autoRef := func() { ts.autoRefresh(screen, ctx) }
+	autoRef := func() { ts.autoRefresh() }
 	time.AfterFunc(time.Second*30, autoRef)
 }
 
@@ -150,10 +150,14 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 
 }
 
-func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ts.refreshData(screen, ctx)
+func (ts *TimelineScreen) autoRefresh() {
+	ts.Timelines.Clear()
+	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
+	for _, item := range items {
+		ts.Timelines.PutItem(item)
+	}
 
-	autoRef := func() { ts.autoRefresh(screen, ctx) }
+	autoRef := func() { ts.autoRefresh() }
 	time.AfterFunc(time.Second*30, autoRef)
 }
 
