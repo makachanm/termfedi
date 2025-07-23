@@ -44,7 +44,6 @@ func NewNotificationScreen(config config.Configuration) *NotificationScreen {
 func (ns *NotificationScreen) InitScene(screen tcell.Screen, ctx ApplicationContext) {
 	_, h := screen.Size()
 	ns.Notifications.SetMaxItemPerPage(int(h / 5))
-
 }
 
 func (ns *NotificationScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
@@ -91,6 +90,7 @@ func (ns *NotificationScreen) refreshData(screen tcell.Screen, ctx ApplicationCo
 		ns.Notifications.PutItem(item)
 	}
 	screen.Clear()
+	ns.drawNotis(screen, ctx)
 
 }
 

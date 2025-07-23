@@ -206,10 +206,11 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 			}
 
 		case NOTI_FOLLOW, NOTI_FAVOURITE, NOTI_RENOTE:
+			rnotis[i].Content = mnotis[i].Status.Contents
 			rnotis[i].ReactedUser = User{
-				Id:          mnotis[i].Status.ID,
-				User_name:   mnotis[i].Status.Account.Username,
-				User_finger: mnotis[i].Status.Account.Acct,
+				Id:          mnotis[i].Account.Id,
+				User_name:   mnotis[i].Account.Username,
+				User_finger: mnotis[i].Account.Acct,
 			}
 		}
 	}
