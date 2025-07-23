@@ -13,22 +13,22 @@ import (
 func DrawNotificationComponent(x int, y int, noti layer.Notification, ctx tcell.Screen, style tcell.Style, maxheight int) {
 	switch noti.Type {
 	case layer.NOTI_MENTION:
-		mention_from := fmt.Sprintf("Got a mention from (%s)", noti.ReactedUser.User_finger)
+		mention_from := fmt.Sprintf("Got a mention from (@%s)", noti.ReactedUser.User_finger)
 		utils.WriteTo(ctx, x+1, y, mention_from, style)
 		drawOthers(x, y, noti, ctx, style, maxheight)
 
 	case layer.NOTI_FAVOURITE:
-		mention_from := fmt.Sprintf("Got a favourite from (%s)", noti.ReactedUser.User_finger)
+		mention_from := fmt.Sprintf("Got a favourite from (@%s)", noti.ReactedUser.User_finger)
 		utils.WriteTo(ctx, x+1, y, mention_from, style)
 		drawOthers(x, y, noti, ctx, style, maxheight)
 
 	case layer.NOTI_RENOTE:
-		mention_from := fmt.Sprintf("Got a renote from (%s)", noti.ReactedUser.User_finger)
+		mention_from := fmt.Sprintf("Got a renote from (@%s)", noti.ReactedUser.User_finger)
 		utils.WriteTo(ctx, x+1, y, mention_from, style)
 		drawOthers(x, y, noti, ctx, style, maxheight)
 
 	case layer.NOTI_FOLLOW:
-		mention_from := fmt.Sprintf("Got a follow from (%s)", noti.ReactedUser.User_finger)
+		mention_from := fmt.Sprintf("Got a follow from (@%s)", noti.ReactedUser.User_finger)
 		utils.WriteTo(ctx, x+1, y, mention_from, style)
 	}
 
