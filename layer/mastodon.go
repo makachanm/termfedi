@@ -50,8 +50,6 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 		httpreq.Header.Set("Authorization", btoken)
 	}
 
-	fmt.Println(xurl)
-
 	resp, herr := http.DefaultClient.Do(httpreq)
 	if herr != nil {
 		panic(herr)

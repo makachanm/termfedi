@@ -90,15 +90,7 @@ func (ts *TimelineScreen) WindowChangedScene(screen tcell.Screen, ctx Applicatio
 }
 
 func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx ApplicationContext) {
-	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
-
-	items := ts.Timelines.GetCurruntPage()
-	for i, notes := range items {
-		component.DrawNoteComponent(0, i*6, notes, screen, textStyle, 6)
-	}
-
-	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
-	ctx.DrawFooterbar(footer)
+	ts.drawNotes(screen, ctx)
 
 	switch ev := event.(type) {
 	case *tcell.EventKey:
@@ -138,12 +130,27 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 
 	screen.Clear()
 	utils.WriteTo(screen, 0, 0, "Refreshing data... Please Wait.", textStyle)
+
 	ts.Timelines.Clear()
 
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
 	for _, item := range items {
 		ts.Timelines.PutItem(item)
 	}
-	ctx.RequestFullRedraw()
 
+	screen.Clear()
+	ts.drawNotes(screen, ctx)
+
+}
+
+func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext) {
+	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
+
+	items := ts.Timelines.GetCurruntPage()
+	for i, notes := range items {
+		component.DrawNoteComponent(0, i*6, notes, screen, textStyle, 6)
+	}
+
+	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+	ctx.DrawFooterbar(footer)
 }
