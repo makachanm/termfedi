@@ -40,6 +40,9 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		tokenType := htmls.Next()
 		switch tokenType {
 		case html.TextToken:
+			result.WriteString(htmls.Token().Data)
+
+		case html.SelfClosingTagToken, html.StartTagToken:
 			tname, _ := htmls.TagName()
 			if string(tname) == "br" {
 				result.WriteString(htmls.Token().Data)
