@@ -180,7 +180,43 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 
 func (m *MastodonFetch) GetPost(id string) Note { return Note{} }
 
-func (m *MastodonFetch) GetNotifications() []Notification       { return []Notification{} }
+func (m *MastodonFetch) GetNotifications() []Notification {
+	d := m.getData(http.MethodGet, "api/v1/notifications", nil, true, false)
+
+	var mnotis []MastodonNotification
+	unmarshallJSON[[]MastodonNotification](&mnotis, d)
+
+	var rnotis []Notification = make([]Notification, len(mnotis))
+	for i := 0; i < len(mnotis); i++ {
+		n_type := platformNotiTypeToValue(mnotis[i].Type)
+		if n_type == NOTI_UNSUPPORTED {
+			continue
+		}
+
+		rnotis[i].Id = mnotis[i].Id
+		rnotis[i].Type = n_type
+
+		switch n_type {
+		case NOTI_MENTION:
+			rnotis[i].Content = mnotis[i].Status.Contents
+			rnotis[i].ReactedUser = User{
+				Id:          mnotis[i].Status.Mentions[0].Id,
+				User_name:   mnotis[i].Status.Mentions[0].Username,
+				User_finger: mnotis[i].Status.Mentions[0].Acct,
+			}
+
+		case NOTI_FOLLOW, NOTI_FAVOURITE, NOTI_RENOTE:
+			rnotis[i].ReactedUser = User{
+				Id:          mnotis[i].Status.ID,
+				User_name:   mnotis[i].Status.Account.Username,
+				User_finger: mnotis[i].Status.Account.Acct,
+			}
+		}
+	}
+
+	return rnotis
+}
+
 func (m *MastodonFetch) GetNotification(id string) Notification { return Notification{} }
 
 func (m *MastodonFetch) GetUser(id string) User { return User{} }

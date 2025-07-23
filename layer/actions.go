@@ -45,7 +45,7 @@ func (f *DataFetch) GetNotification(id string) Notification {
 	return f.base.GetNotification(id)
 }
 
-func (f *DataFetch) GetNotifications(id string) []Notification {
+func (f *DataFetch) GetNotifications() []Notification {
 	return f.base.GetNotifications()
 }
 

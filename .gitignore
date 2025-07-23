@@ -2,3 +2,4 @@ termfedi
 *_test.go
 config.json
 *.nouse
+build_debug.sh

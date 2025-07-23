@@ -5,12 +5,21 @@ import (
 )
 
 type Visiblity int
+type NotificationType int
 
 const (
 	VISIBLITY_PUBLIC Visiblity = iota + 1
 	VISIBLITY_QUIET
 	VISIBLITY_FOLLOWER
 	VISIBLITY_DIRECT
+)
+
+const (
+	NOTI_MENTION NotificationType = iota + 1
+	NOTI_FAVOURITE
+	NOTI_RENOTE
+	NOTI_FOLLOW
+	NOTI_UNSUPPORTED
 )
 
 func VisiblityToText(v Visiblity) string {
@@ -45,6 +54,22 @@ func platformVisblityToValue(s string) Visiblity {
 	}
 }
 
+func platformNotiTypeToValue(s string) NotificationType {
+	switch s {
+	case "mention":
+		return NOTI_MENTION
+	case "reblog":
+		return NOTI_RENOTE
+	case "favourite":
+		return NOTI_FAVOURITE
+	case "follow":
+		return NOTI_FOLLOW
+
+	default:
+		return NOTI_UNSUPPORTED
+	}
+}
+
 type Note struct {
 	Id string `json:"id"`
 
@@ -72,6 +97,9 @@ type User struct {
 }
 
 type Notification struct {
-	Id      string
-	Content string
+	Id   string
+	Type NotificationType
+
+	Content     string
+	ReactedUser User
 }
