@@ -74,9 +74,13 @@ func drawOthers(x int, y int, noti layer.Notification, ctx tcell.Screen, style t
 		}
 	}
 
+	if !(len(render_targets) <= maxheight-4) {
+		render_targets[maxheight-4] = "(....)"
+	}
+
 	for i, ntx := range render_targets {
 		utils.WriteTo(ctx, x+1, y+2+i, ntx, style)
-		if i >= maxheight-3 {
+		if i >= maxheight-4 {
 			break
 		}
 	}

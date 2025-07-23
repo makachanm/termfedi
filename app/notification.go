@@ -43,13 +43,15 @@ func NewNotificationScreen(config config.Configuration) *NotificationScreen {
 
 func (ns *NotificationScreen) InitScene(screen tcell.Screen, ctx ApplicationContext) {
 	_, h := screen.Size()
-	ns.Notifications.SetMaxItemPerPage(int(h / 5))
-	screen.Clear()
+	ns.Notifications.SetMaxItemPerPage(int(h / 6))
+
+	screen.Sync()
+	screen.Show()
 }
 
 func (ns *NotificationScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
 	_, h := screen.Size()
-	ns.Notifications.SetMaxItemPerPage(int(h / 5))
+	ns.Notifications.SetMaxItemPerPage(int(h / 6))
 }
 
 func (ns *NotificationScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx ApplicationContext) {
@@ -100,7 +102,7 @@ func (ns *NotificationScreen) drawNotis(screen tcell.Screen, ctx ApplicationCont
 
 	items := ns.Notifications.GetCurruntPage()
 	for i, notes := range items {
-		component.DrawNotificationComponent(0, i*5, notes, screen, textStyle, 5)
+		component.DrawNotificationComponent(0, i*6, notes, screen, textStyle, 6)
 	}
 
 	footer := fmt.Sprintf(" Noti Page %d/%d | [Quit] C-p | [Rfrh] C-r | [Timeline] C-n | [Prev] <- [Next] -> ", ns.Notifications.GetCurruntPagePointer()+1, ns.Notifications.GetTotalPage()+1)
