@@ -16,7 +16,10 @@ func NewItemAutoDemandPagination[T any](max_item_limit int, max_per_page_limit i
 	ptk.items = make([]T, 0)
 
 	ptk.currunt_page_pointer = 0
-	ptk.total_page_count = (ptk.max_item_limit / ptk.max_item_per_page) + (ptk.max_item_limit % ptk.max_item_per_page)
+	ptk.total_page_count = (ptk.max_item_limit / ptk.max_item_per_page)
+	if (ptk.max_item_limit % ptk.max_item_per_page) > 0 {
+		ptk.total_page_count++
+	}
 
 	return ptk
 }
@@ -24,7 +27,10 @@ func NewItemAutoDemandPagination[T any](max_item_limit int, max_per_page_limit i
 func (p *ItemAutoDemandPagination[T]) SetMaxItemPerPage(limit int) {
 	//must reset all pagination status
 	p.max_item_per_page = limit
-	p.total_page_count = (p.max_item_limit / p.max_item_per_page) + (p.max_item_limit % p.max_item_per_page)
+	p.total_page_count = (p.max_item_limit / p.max_item_per_page)
+	if (p.max_item_limit % p.max_item_per_page) > 0 {
+		p.total_page_count++
+	}
 
 	p.currunt_page_pointer = 0
 }
