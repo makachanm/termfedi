@@ -70,6 +70,44 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 	return bytes
 }
 
+func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, querys map[string]string) []byte {
+	spath := strings.Split(path, "/")
+	xurl := m.instance_url.JoinPath(spath...)
+	uquery := xurl.Query()
+	for x, v := range querys {
+		uquery.Set(x, v)
+	}
+
+	httpreq, err := http.NewRequest(method, xurl.String(), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	if authneed {
+		btoken := fmt.Sprintf("Bearer %s", m.token)
+		httpreq.Header.Set("Authorization", btoken)
+	}
+
+	resp, herr := http.DefaultClient.Do(httpreq)
+	if herr != nil {
+		panic(herr)
+	}
+	defer resp.Body.Close()
+
+	bytes, rerr := io.ReadAll(resp.Body)
+
+	if rerr != nil {
+		panic(err)
+	}
+
+	if resp.Status != "200 OK" {
+		fmt.Println("ERROR:", string(bytes))
+		os.Exit(-1)
+	}
+
+	return bytes
+}
+
 func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	d := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
 
@@ -94,7 +132,7 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	return rnotes
 }
 func (m *MastodonFetch) GetLocalTimeline() []Note {
-	d := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+	d := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true"})
 
 	var mNotes []MastodonNote
 	unmarshallJSON[[]MastodonNote](&mNotes, d)

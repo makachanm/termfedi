@@ -40,7 +40,16 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		tokenType := htmls.Next()
 		switch tokenType {
 		case html.TextToken:
-			result.WriteString(htmls.Token().Data)
+			h_text := htmls.Token().Data
+			width, _ := ctx.Size()
+			if len(h_text) >= width {
+				result.WriteString(h_text[:maxheight])
+				render_targets = append(render_targets, result.String())
+				result.Reset()
+				result.WriteString(h_text[maxheight:])
+			} else {
+				result.WriteString(h_text)
+			}
 
 		case html.SelfClosingTagToken, html.StartTagToken:
 			tname, _ := htmls.TagName()

@@ -113,6 +113,9 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 
 			ts.refreshData(screen, ctx)
 
+		case tcell.KeyCtrlN:
+			ctx.TranslateTo("noti")
+
 		case tcell.KeyLeft:
 			ts.Timelines.GoPrev()
 			ctx.RequestFullRedraw()
