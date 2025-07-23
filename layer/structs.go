@@ -29,6 +29,22 @@ func VisiblityToText(v Visiblity) string {
 	}
 }
 
+func platformVisblityToValue(s string) Visiblity {
+	switch s {
+	case "public":
+		return VISIBLITY_PUBLIC
+	case "unlisted":
+		return VISIBLITY_QUIET
+	case "private":
+		return VISIBLITY_FOLLOWER
+	case "direct":
+		return VISIBLITY_DIRECT
+
+	default:
+		return VISIBLITY_QUIET
+	}
+}
+
 type Note struct {
 	Id string `json:"id"`
 
@@ -38,8 +54,11 @@ type Note struct {
 	Visiblity Visiblity
 	Time      time.Time
 
-	Spoiler *string `json:"spoiler_text"`
-	Content string  `json:"content"`
+	Spoiler *string
+	Content string
+
+	RenoteCount   int
+	ReactionCount int
 }
 
 type User struct {

@@ -7,8 +7,11 @@ type MastodonUser struct {
 }
 
 type MastodonNote struct {
-	Id             string       `json:"id"`
-	Content        string       `json:"content"`
-	Spoilerwarning *string      `json:"spoiler_text"`
-	User           MastodonUser `json:"account"`
+	Id              string       `json:"id"`
+	Content         string       `json:"content"`
+	Spoilerwarning  *string      `json:"spoiler_text"`
+	User            MastodonUser `json:"account"`
+	ReblogsCount    int          `json:"reblogs_count"`
+	FavouritesCount int          `json:"favourites_count"`
+	Visibility      string       `json:"visibility"`
 }

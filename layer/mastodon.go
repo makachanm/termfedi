@@ -84,6 +84,9 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 		rnotes[i].Author_finger = mNotes[i].User.Finger
 		rnotes[i].Author_name = mNotes[i].User.Name
 		rnotes[i].Content = mNotes[i].Content
+		rnotes[i].RenoteCount = mNotes[i].ReblogsCount
+		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
+		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
 
 		if mNotes[i].Spoilerwarning != nil {
 			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
@@ -104,6 +107,9 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 		rnotes[i].Author_finger = mNotes[i].User.Finger
 		rnotes[i].Author_name = mNotes[i].User.Name
 		rnotes[i].Content = mNotes[i].Content
+		rnotes[i].RenoteCount = mNotes[i].ReblogsCount
+		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
+		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
 
 		if mNotes[i].Spoilerwarning != nil {
 			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
@@ -124,6 +130,9 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 		rnotes[i].Author_finger = mNotes[i].User.Finger
 		rnotes[i].Author_name = mNotes[i].User.Name
 		rnotes[i].Content = mNotes[i].Content
+		rnotes[i].RenoteCount = mNotes[i].ReblogsCount
+		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
+		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
 
 		if mNotes[i].Spoilerwarning != nil {
 			rnotes[i].Spoiler = mNotes[i].Spoilerwarning

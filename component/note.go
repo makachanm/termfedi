@@ -65,8 +65,11 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 	//}
 	for i, ntx := range render_targets {
 		utils.WriteTo(ctx, x+1, y+1+i, ntx, style)
-		if i >= maxheight {
+		if i >= maxheight-3 {
 			break
 		}
 	}
+
+	status := fmt.Sprintf("(%s Note) RENOTE: %d | FAVOURITES: %d", layer.VisiblityToText(note.Visiblity), note.RenoteCount, note.ReactionCount)
+	utils.WriteTo(ctx, x+1, y+maxheight-2, status, style)
 }
