@@ -84,7 +84,7 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 	_, h := screen.Size()
 	ts.Timelines.SetMaxItemPerPage(int(h / 6))
 
-	autoRef := func() { ts.autoRefresh(ctx) }
+	autoRef := func() { ts.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
 }
 
@@ -150,15 +150,17 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 
 }
 
-func (ts *TimelineScreen) autoRefresh(ctx ApplicationContext) {
+func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
 	ts.Timelines.Clear()
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
 	for _, item := range items {
 		ts.Timelines.PutItem(item)
 	}
 
-	autoRef := func() { ts.autoRefresh(ctx) }
+	autoRef := func() { ts.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
+
+	screen.Clear()
 }
 
 func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext) {
@@ -170,5 +172,6 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 	}
 
 	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+
 	ctx.DrawFooterbar(footer)
 }
