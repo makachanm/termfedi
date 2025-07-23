@@ -13,9 +13,10 @@ type TerminalMainApp struct {
 	currunt_scene string
 	appctx        *MainAppContexts
 
-	termination_signal chan int
-	transision_signal  chan string
-	redraw_signal      chan bool
+	termination_signal   chan int
+	transision_signal    chan string
+	redraw_signal        chan bool
+	footer_redraw_signal chan bool
 }
 
 func NewTerminalScreen() *TerminalMainApp {
@@ -26,8 +27,9 @@ func NewTerminalScreen() *TerminalMainApp {
 	app.termination_signal = make(chan int, 1)
 	app.transision_signal = make(chan string, 1)
 	app.redraw_signal = make(chan bool, 1)
+	app.footer_redraw_signal = make(chan bool, 1)
 
-	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal, app.redraw_signal)
+	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal, app.redraw_signal, app.footer_redraw_signal)
 	return app
 }
 
@@ -94,6 +96,9 @@ func (t *TerminalMainApp) Mainloop() {
 		case <-t.redraw_signal:
 			need_full_redraw = true
 
+		case <-t.footer_redraw_signal:
+			t.DrawStatusBar()
+
 		default:
 		}
 
@@ -109,6 +114,7 @@ func (t *TerminalMainApp) Mainloop() {
 			t.screen.Clear()
 			t.screen.Sync()
 		}
+
 		t.scenes[t.currunt_scene].DoScene(t.screen, event, t.appctx)
 		t.DrawStatusBar()
 
@@ -120,16 +126,18 @@ type MainAppContexts struct {
 	termination_signal chan int
 	transision_signal  chan string
 	redraw_signal      chan bool
+	footer_redraw      chan bool
 
 	Footer string
 }
 
-func NewMainAppCtx(termsig chan int, transsig chan string, redrawsig chan bool) *MainAppContexts {
+func NewMainAppCtx(termsig chan int, transsig chan string, redrawsig chan bool, footer chan bool) *MainAppContexts {
 	Ctx := new(MainAppContexts)
 
 	Ctx.termination_signal = termsig
 	Ctx.transision_signal = transsig
 	Ctx.redraw_signal = redrawsig
+	Ctx.footer_redraw = footer
 
 	return Ctx
 }
@@ -144,6 +152,10 @@ func (m *MainAppContexts) TranslateTo(name string) {
 
 func (m *MainAppContexts) RequestFullRedraw() {
 	m.redraw_signal <- true
+}
+
+func (m *MainAppContexts) RequestFooterbarRedraw() {
+	m.footer_redraw <- true
 }
 
 func (m *MainAppContexts) DrawFooterbar(content string) {

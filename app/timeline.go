@@ -157,9 +157,6 @@ func (ts *TimelineScreen) autoRefresh(ctx ApplicationContext) {
 		ts.Timelines.PutItem(item)
 	}
 
-	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> (TL Updated!)", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
-	ctx.DrawFooterbar(footer)
-
 	autoRef := func() { ts.autoRefresh(ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
 }

@@ -12,6 +12,7 @@ type ApplicationContext interface {
 	Exit(exitcode int)
 	TranslateTo(name string)
 	RequestFullRedraw()
+	RequestFooterbarRedraw()
 	DrawFooterbar(content string)
 }
 
