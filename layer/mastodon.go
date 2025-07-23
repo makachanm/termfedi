@@ -1,0 +1,101 @@
+package layer
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+)
+
+type MastodonFetch struct {
+	token        string
+	instance_url *url.URL
+}
+
+func NewMastodonFetch(token string, insurl string) *MastodonFetch {
+	var err error
+
+	mastodon := new(MastodonFetch)
+	mastodon.instance_url, err = url.Parse(insurl)
+	mastodon.token = token
+
+	if err != nil {
+		panic(err)
+	}
+
+	return mastodon
+}
+
+func (m *MastodonFetch) getData(method string, path string, data interface{}, authneed bool, hasdata bool) []byte {
+	spath := strings.Split(path, "/")
+	xurl := m.instance_url.JoinPath(spath...)
+
+	httpreq, err := http.NewRequest(method, xurl.String(), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	if authneed {
+		btoken := fmt.Sprintf("Bearer %s", m.token)
+		httpreq.Header.Set("Authorization", btoken)
+	}
+
+	fmt.Println(xurl)
+
+	resp, herr := http.DefaultClient.Do(httpreq)
+	if herr != nil {
+		panic(herr)
+	}
+	defer resp.Body.Close()
+
+	bytes, rerr := io.ReadAll(resp.Body)
+
+	if rerr != nil {
+		panic(err)
+	}
+
+	if resp.Status != "200 OK" {
+		fmt.Println("ERROR:", string(bytes))
+		os.Exit(-1)
+	}
+
+	return bytes
+}
+
+func (m *MastodonFetch) GetGlobalTimeline() []Note { return []Note{} }
+func (m *MastodonFetch) GetLocalTimeline() []Note  { return []Note{} }
+func (m *MastodonFetch) GetHomeTimeline() []Note {
+	d := m.getData(http.MethodGet, "api/v1/timelines/home", nil, true, false)
+
+	var mNotes []MastodonNote
+	err := json.Unmarshal(d, &mNotes)
+
+	if err != nil {
+		fmt.Println("BODY: ", string(d))
+		panic(err)
+	}
+
+	var rnotes []Note = make([]Note, len(mNotes))
+	for i := 0; i < len(mNotes); i++ {
+		rnotes[i].Id = mNotes[i].Id
+		rnotes[i].Author_finger = mNotes[i].User.Finger
+		rnotes[i].Author_name = mNotes[i].User.Name
+		rnotes[i].Content = mNotes[i].Content
+
+		if mNotes[i].Spoilerwarning != nil {
+			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		}
+	}
+
+	return rnotes
+}
+
+func (m *MastodonFetch) GetPost(id string) Note { return Note{} }
+
+func (m *MastodonFetch) GetNotifications() []Notification       { return []Notification{} }
+func (m *MastodonFetch) GetNotification(id string) Notification { return Notification{} }
+
+func (m *MastodonFetch) GetUser(id string) User { return User{} }
