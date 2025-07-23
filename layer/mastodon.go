@@ -1,7 +1,7 @@
 package layer
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,7 +33,14 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 	spath := strings.Split(path, "/")
 	xurl := m.instance_url.JoinPath(spath...)
 
-	httpreq, err := http.NewRequest(method, xurl.String(), nil)
+	var bodyreader *bytes.Reader
+	if hasdata {
+		bodyreader = bytes.NewReader(marshallJSON(&data))
+	} else {
+		bodyreader = bytes.NewReader([]byte{})
+	}
+
+	httpreq, err := http.NewRequest(method, xurl.String(), bodyreader)
 	if err != nil {
 		panic(err)
 	}
@@ -65,18 +72,51 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 	return bytes
 }
 
-func (m *MastodonFetch) GetGlobalTimeline() []Note { return []Note{} }
-func (m *MastodonFetch) GetLocalTimeline() []Note  { return []Note{} }
+func (m *MastodonFetch) GetGlobalTimeline() []Note {
+	d := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+
+	var mNotes []MastodonNote
+	unmarshallJSON[[]MastodonNote](&mNotes, d)
+
+	var rnotes []Note = make([]Note, len(mNotes))
+	for i := 0; i < len(mNotes); i++ {
+		rnotes[i].Id = mNotes[i].Id
+		rnotes[i].Author_finger = mNotes[i].User.Finger
+		rnotes[i].Author_name = mNotes[i].User.Name
+		rnotes[i].Content = mNotes[i].Content
+
+		if mNotes[i].Spoilerwarning != nil {
+			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		}
+	}
+
+	return rnotes
+}
+func (m *MastodonFetch) GetLocalTimeline() []Note {
+	d := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+
+	var mNotes []MastodonNote
+	unmarshallJSON[[]MastodonNote](&mNotes, d)
+
+	var rnotes []Note = make([]Note, len(mNotes))
+	for i := 0; i < len(mNotes); i++ {
+		rnotes[i].Id = mNotes[i].Id
+		rnotes[i].Author_finger = mNotes[i].User.Finger
+		rnotes[i].Author_name = mNotes[i].User.Name
+		rnotes[i].Content = mNotes[i].Content
+
+		if mNotes[i].Spoilerwarning != nil {
+			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		}
+	}
+
+	return rnotes
+}
 func (m *MastodonFetch) GetHomeTimeline() []Note {
 	d := m.getData(http.MethodGet, "api/v1/timelines/home", nil, true, false)
 
 	var mNotes []MastodonNote
-	err := json.Unmarshal(d, &mNotes)
-
-	if err != nil {
-		fmt.Println("BODY: ", string(d))
-		panic(err)
-	}
+	unmarshallJSON[[]MastodonNote](&mNotes, d)
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {

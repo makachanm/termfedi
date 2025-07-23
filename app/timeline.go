@@ -6,7 +6,7 @@ import (
 	"termfedi/component"
 	"termfedi/config"
 	"termfedi/layer"
-	utils "termfedi/utils"
+	"termfedi/utils"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -22,11 +22,39 @@ const TOKEN = ""
  MUST REMOVE BEFORE RELEASE
 */
 
+type CurruntTL int
+
 const (
-	CURRUNTTL_GLOBAL int = iota + 1
+	CURRUNTTL_GLOBAL CurruntTL = iota + 1
 	CURRUNTTL_HOME
 	CURRUNTTL_LOCAL
 )
+
+func curruntTimeline(tl CurruntTL) string {
+	switch tl {
+	case CURRUNTTL_GLOBAL:
+		return "GlobTL"
+	case CURRUNTTL_HOME:
+		return "HomeTL"
+	case CURRUNTTL_LOCAL:
+		return "LoclTL"
+	default:
+		return "Unknown"
+	}
+}
+
+func getTimeline(layer *layer.DataFetch, tl CurruntTL) []layer.Note {
+	switch tl {
+	case CURRUNTTL_GLOBAL:
+		return layer.GetGlobalTimeline()
+	case CURRUNTTL_HOME:
+		return layer.GetHomeTimeline()
+	case CURRUNTTL_LOCAL:
+		return layer.GetLocalTimeline()
+	default:
+		return nil
+	}
+}
 
 type TimelineScreen struct {
 	//somethibgs brrrrr
@@ -34,6 +62,7 @@ type TimelineScreen struct {
 	timelinelock sync.RWMutex
 
 	FetchLayer layer.DataFetch
+	currunt_tl CurruntTL
 }
 
 func NewTimelineScreen(config config.Configuration) *TimelineScreen {
@@ -41,7 +70,8 @@ func NewTimelineScreen(config config.Configuration) *TimelineScreen {
 	ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](20, 5)
 	ts.FetchLayer = layer.NewDataFetchAction(layer.NewMastodonFetch(config.Session.Token, config.Session.Url))
 
-	items := ts.FetchLayer.GetHomeTimeline()
+	ts.currunt_tl = CURRUNTTL_HOME
+	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
 	for _, item := range items {
 		ts.Timelines.PutItem(item)
 	}
@@ -67,7 +97,7 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 		component.DrawNoteComponent(0, i*6, notes, screen, textStyle, 6)
 	}
 
-	footer := fmt.Sprintf(" HomeTL Page %d/%d | [Quit] C-p | [Rfrh] C-r | [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
 	ctx.DrawFooterbar(footer)
 
 	switch ev := event.(type) {
@@ -77,15 +107,19 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 			ctx.Exit(0)
 
 		case tcell.KeyCtrlR:
-			screen.Clear()
-			utils.WriteTo(screen, 0, 0, "Refreshing data... Please Wait.", textStyle)
-			ts.Timelines.Clear()
+			ts.refreshData(screen, ctx)
 
-			items := ts.FetchLayer.GetHomeTimeline()
-			for _, item := range items {
-				ts.Timelines.PutItem(item)
+		case tcell.KeyCtrlE:
+			switch ts.currunt_tl {
+			case CURRUNTTL_GLOBAL:
+				ts.currunt_tl = CURRUNTTL_LOCAL
+			case CURRUNTTL_HOME:
+				ts.currunt_tl = CURRUNTTL_GLOBAL
+			case CURRUNTTL_LOCAL:
+				ts.currunt_tl = CURRUNTTL_HOME
 			}
-			ctx.RequestFullRedraw()
+
+			ts.refreshData(screen, ctx)
 
 		case tcell.KeyLeft:
 			ts.Timelines.GoPrev()
@@ -97,4 +131,19 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 
 		}
 	}
+}
+
+func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContext) {
+	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
+
+	screen.Clear()
+	utils.WriteTo(screen, 0, 0, "Refreshing data... Please Wait.", textStyle)
+	ts.Timelines.Clear()
+
+	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
+	for _, item := range items {
+		ts.Timelines.PutItem(item)
+	}
+	ctx.RequestFullRedraw()
+
 }
