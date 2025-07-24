@@ -7,6 +7,7 @@ import (
 	"termfedi/config"
 	"termfedi/layer"
 	"termfedi/utils"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -45,8 +46,8 @@ func (ns *NotificationScreen) InitScene(screen tcell.Screen, ctx ApplicationCont
 	_, h := screen.Size()
 	ns.Notifications.SetMaxItemPerPage(int(h / 6))
 
-	screen.Sync()
-	screen.Show()
+	autoRef := func() { ns.autoRefresh(screen, ctx) }
+	time.AfterFunc(time.Second*30, autoRef)
 }
 
 func (ns *NotificationScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
@@ -95,6 +96,19 @@ func (ns *NotificationScreen) refreshData(screen tcell.Screen, ctx ApplicationCo
 	screen.Clear()
 	ns.drawNotis(screen, ctx)
 
+}
+
+func (ns *NotificationScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
+	ns.Notifications.Clear()
+	items := ns.FetchLayer.GetNotifications()
+	for _, item := range items {
+		ns.Notifications.PutItem(item)
+	}
+
+	autoRef := func() { ns.autoRefresh(screen, ctx) }
+	time.AfterFunc(time.Second*30, autoRef)
+
+	screen.Clear()
 }
 
 func (ns *NotificationScreen) drawNotis(screen tcell.Screen, ctx ApplicationContext) {

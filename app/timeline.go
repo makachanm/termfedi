@@ -136,7 +136,10 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 
 	screen.Clear()
+	//fmt.Println("Gathering Data.... Please Wait.")
 	utils.WriteTo(screen, 0, 0, "Refreshing data... Please Wait.", textStyle)
+	screen.Sync()
+	screen.Show()
 
 	ts.Timelines.Clear()
 
@@ -145,9 +148,7 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 		ts.Timelines.PutItem(item)
 	}
 
-	screen.Clear()
 	ts.drawNotes(screen, ctx)
-
 }
 
 func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {

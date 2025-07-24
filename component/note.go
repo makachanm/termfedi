@@ -67,10 +67,6 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		}
 	}
 
-	if !(len(render_targets) <= maxheight-3) {
-		render_targets[maxheight-3] = "(....)"
-	}
-
 	for i, ntx := range render_targets {
 		utils.WriteTo(ctx, x+1, y+1+i, ntx, style)
 		if i >= maxheight-3 {
