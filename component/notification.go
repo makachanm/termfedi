@@ -40,6 +40,8 @@ func drawOthers(x int, y int, noti layer.Notification, ctx tcell.Screen, style t
 	var render_targets []string = make([]string, 0)
 
 	var result strings.Builder
+	noti.Content = strings.ReplaceAll(noti.Content, "\n", "<br>")
+
 	htmls := html.NewTokenizer(strings.NewReader(noti.Content))
 	loops := true
 

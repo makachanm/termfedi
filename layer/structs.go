@@ -42,11 +42,11 @@ func platformVisblityToValue(s string) Visiblity {
 	switch s {
 	case "public":
 		return VISIBLITY_PUBLIC
-	case "unlisted":
+	case "unlisted", "home":
 		return VISIBLITY_QUIET
-	case "private":
+	case "private", "followers":
 		return VISIBLITY_FOLLOWER
-	case "direct":
+	case "direct", "specified":
 		return VISIBLITY_DIRECT
 
 	default:

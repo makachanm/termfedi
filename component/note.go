@@ -29,6 +29,7 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 	utils.WriteTo(ctx, x+1, y, name, style)
 
 	content := note.Content
+	content = strings.ReplaceAll(content, "\n", "<br>")
 
 	var render_targets []string = make([]string, 0)
 

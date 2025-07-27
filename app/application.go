@@ -117,7 +117,6 @@ func (t *TerminalMainApp) Mainloop() {
 
 		t.scenes[t.currunt_scene].DoScene(t.screen, event, t.appctx)
 		t.DrawStatusBar()
-
 		t.screen.Show()
 	}
 }

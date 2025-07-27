@@ -11,6 +11,7 @@ func unmarshallJSON[T any](obj *T, d []byte) {
 		fmt.Println("BODY: ", string(d))
 		panic(err)
 	}
+
 }
 
 func marshallJSON[T any](obj *T) []byte {

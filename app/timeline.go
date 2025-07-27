@@ -64,12 +64,28 @@ type TimelineScreen struct {
 
 	FetchLayer layer.DataFetch
 	currunt_tl CurruntTL
+
+	config config.Configuration
 }
 
-func NewTimelineScreen(config config.Configuration) *TimelineScreen {
+func NewTimelineScreen(cfg config.Configuration) *TimelineScreen {
 	ts := new(TimelineScreen)
-	ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](20, 5)
-	ts.FetchLayer = layer.NewDataFetchAction(layer.NewMastodonFetch(config.Session.Token, config.Session.Url))
+
+	var vlayer layer.FetchActionBase
+	switch cfg.Session.Type {
+	case config.Mastodon:
+		vlayer = layer.NewMastodonFetch(cfg.Session.Token, cfg.Session.Url)
+		ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](20, 5)
+
+	case config.Misskey:
+		vlayer = layer.NewMisskeyFetch(cfg.Session.Token, cfg.Session.Url)
+		ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](100, 5)
+
+	default:
+		panic("session type invalid")
+
+	}
+	ts.FetchLayer = layer.NewDataFetchAction(vlayer)
 
 	ts.currunt_tl = CURRUNTTL_HOME
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
@@ -77,20 +93,24 @@ func NewTimelineScreen(config config.Configuration) *TimelineScreen {
 		ts.Timelines.PutItem(item)
 	}
 
+	ts.config = cfg
+
 	return ts
 }
 
 func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext) {
 	_, h := screen.Size()
-	ts.Timelines.SetMaxItemPerPage(int(h / 6))
+	ts.Timelines.SetMaxItemPerPage(int(h / ts.config.UI.MaxItemHeight))
 
-	autoRef := func() { ts.autoRefresh(screen, ctx) }
+	autoRef := func() {
+		ts.autoRefresh(screen, ctx)
+	}
 	time.AfterFunc(time.Second*30, autoRef)
 }
 
 func (ts *TimelineScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
 	_, h := screen.Size()
-	ts.Timelines.SetMaxItemPerPage(int(h / 6))
+	ts.Timelines.SetMaxItemPerPage(int(h / ts.config.UI.MaxItemHeight))
 }
 
 func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx ApplicationContext) {
@@ -133,14 +153,6 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 }
 
 func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContext) {
-	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
-
-	screen.Clear()
-	//fmt.Println("Gathering Data.... Please Wait.")
-	utils.WriteTo(screen, 0, 0, "Refreshing data... Please Wait.", textStyle)
-	screen.Sync()
-	screen.Show()
-
 	ts.Timelines.Clear()
 
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
@@ -148,20 +160,15 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 		ts.Timelines.PutItem(item)
 	}
 
-	ts.drawNotes(screen, ctx)
+	//ts.drawNotes(screen, ctx)
 }
 
 func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ts.Timelines.Clear()
-	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
-	for _, item := range items {
-		ts.Timelines.PutItem(item)
-	}
+	ctx.RequestFullRedraw()
+	ts.refreshData(screen, ctx)
 
 	autoRef := func() { ts.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
-
-	screen.Clear()
 }
 
 func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext) {
@@ -169,7 +176,7 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 
 	items := ts.Timelines.GetCurruntPage()
 	for i, notes := range items {
-		component.DrawNoteComponent(0, i*6, notes, screen, textStyle, 6)
+		component.DrawNoteComponent(0, i*ts.config.UI.MaxItemHeight, notes, screen, textStyle, ts.config.UI.MaxItemHeight)
 	}
 
 	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
