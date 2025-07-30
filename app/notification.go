@@ -65,6 +65,9 @@ func (ns *NotificationScreen) InitScene(screen tcell.Screen, ctx ApplicationCont
 
 	autoRef := func() { ns.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
+
+	screen.Clear()
+	ns.drawNotis(screen, ctx)
 }
 
 func (ns *NotificationScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
@@ -89,11 +92,15 @@ func (ns *NotificationScreen) DoScene(screen tcell.Screen, event tcell.Event, ct
 
 		case tcell.KeyLeft:
 			ns.Notifications.GoPrev()
-			ctx.RequestFullRedraw()
+			screen.Clear()
+			ns.drawNotis(screen, ctx)
+			//ctx.RequestFullRedraw()
 
 		case tcell.KeyRight:
 			ns.Notifications.GoNext()
-			ctx.RequestFullRedraw()
+			screen.Clear()
+			ns.drawNotis(screen, ctx)
+			//ctx.RequestFullRedraw()
 
 		}
 	}

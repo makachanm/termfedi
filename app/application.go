@@ -13,10 +13,8 @@ type TerminalMainApp struct {
 	currunt_scene string
 	appctx        *MainAppContexts
 
-	termination_signal   chan int
-	transision_signal    chan string
-	redraw_signal        chan bool
-	footer_redraw_signal chan bool
+	termination_signal chan int
+	transision_signal  chan string
 }
 
 func NewTerminalScreen() *TerminalMainApp {
@@ -26,10 +24,8 @@ func NewTerminalScreen() *TerminalMainApp {
 	app.scenes = make(map[string]ApplicationScene)
 	app.termination_signal = make(chan int, 1)
 	app.transision_signal = make(chan string, 1)
-	app.redraw_signal = make(chan bool, 1)
-	app.footer_redraw_signal = make(chan bool, 1)
 
-	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal, app.redraw_signal, app.footer_redraw_signal)
+	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal)
 	return app
 }
 
@@ -82,7 +78,6 @@ func (t *TerminalMainApp) Mainloop() {
 		case <-t.termination_signal:
 			close(t.termination_signal)
 			close(t.transision_signal)
-			close(t.redraw_signal)
 			t.screen.Fini()
 			os.Exit(0)
 
@@ -92,12 +87,6 @@ func (t *TerminalMainApp) Mainloop() {
 				need_full_redraw = true
 			}
 			t.scenes[t.currunt_scene].InitScene(t.screen, t.appctx)
-
-		case <-t.redraw_signal:
-			need_full_redraw = true
-
-		case <-t.footer_redraw_signal:
-			t.DrawStatusBar()
 
 		default:
 		}
@@ -124,19 +113,15 @@ func (t *TerminalMainApp) Mainloop() {
 type MainAppContexts struct {
 	termination_signal chan int
 	transision_signal  chan string
-	redraw_signal      chan bool
-	footer_redraw      chan bool
 
 	Footer string
 }
 
-func NewMainAppCtx(termsig chan int, transsig chan string, redrawsig chan bool, footer chan bool) *MainAppContexts {
+func NewMainAppCtx(termsig chan int, transsig chan string) *MainAppContexts {
 	Ctx := new(MainAppContexts)
 
 	Ctx.termination_signal = termsig
 	Ctx.transision_signal = transsig
-	Ctx.redraw_signal = redrawsig
-	Ctx.footer_redraw = footer
 
 	return Ctx
 }
@@ -147,14 +132,6 @@ func (m *MainAppContexts) Exit(exitcode int) {
 
 func (m *MainAppContexts) TranslateTo(name string) {
 	m.transision_signal <- name
-}
-
-func (m *MainAppContexts) RequestFullRedraw() {
-	m.redraw_signal <- true
-}
-
-func (m *MainAppContexts) RequestFooterbarRedraw() {
-	m.footer_redraw <- true
 }
 
 func (m *MainAppContexts) DrawFooterbar(content string) {

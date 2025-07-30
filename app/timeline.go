@@ -106,6 +106,9 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 		ts.autoRefresh(screen, ctx)
 	}
 	time.AfterFunc(time.Second*30, autoRef)
+
+	screen.Clear()
+	ts.drawNotes(screen, ctx)
 }
 
 func (ts *TimelineScreen) WindowChangedScene(screen tcell.Screen, ctx ApplicationContext) {
@@ -142,11 +145,13 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 
 		case tcell.KeyLeft:
 			ts.Timelines.GoPrev()
-			ctx.RequestFullRedraw()
+			screen.Clear()
+			ts.drawNotes(screen, ctx)
 
 		case tcell.KeyRight:
 			ts.Timelines.GoNext()
-			ctx.RequestFullRedraw()
+			screen.Clear()
+			ts.drawNotes(screen, ctx)
 
 		}
 	}
