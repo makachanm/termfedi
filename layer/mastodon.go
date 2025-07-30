@@ -29,7 +29,7 @@ func NewMastodonFetch(token string, insurl string) *MastodonFetch {
 	return mastodon
 }
 
-func (m *MastodonFetch) getData(method string, path string, data interface{}, authneed bool, hasdata bool) []byte {
+func (m *MastodonFetch) getData(method string, path string, data interface{}, authneed bool, hasdata bool) ([]byte, error) {
 	spath := strings.Split(path, "/")
 	xurl := m.instance_url.JoinPath(spath...)
 
@@ -42,7 +42,7 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 
 	httpreq, err := http.NewRequest(method, xurl.String(), bodyreader)
 	if err != nil {
-		panic(err)
+		return []byte{}, err
 	}
 
 	if authneed {
@@ -52,14 +52,14 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 
 	resp, herr := http.DefaultClient.Do(httpreq)
 	if herr != nil {
-		panic(herr)
+		return []byte{}, err
 	}
 	defer resp.Body.Close()
 
 	bytes, rerr := io.ReadAll(resp.Body)
 
 	if rerr != nil {
-		panic(err)
+		return []byte{}, err
 	}
 
 	if resp.Status != "200 OK" {
@@ -67,10 +67,10 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 		os.Exit(-1)
 	}
 
-	return bytes
+	return bytes, nil
 }
 
-func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, querys map[string]string) []byte {
+func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, querys map[string]string) ([]byte, error) {
 	spath := strings.Split(path, "/")
 	xurl := m.instance_url.JoinPath(spath...)
 	uquery := xurl.Query()
@@ -80,7 +80,7 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 
 	httpreq, err := http.NewRequest(method, xurl.String(), nil)
 	if err != nil {
-		panic(err)
+		return []byte{}, err
 	}
 
 	if authneed {
@@ -90,14 +90,14 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 
 	resp, herr := http.DefaultClient.Do(httpreq)
 	if herr != nil {
-		panic(herr)
+		return []byte{}, err
 	}
 	defer resp.Body.Close()
 
 	bytes, rerr := io.ReadAll(resp.Body)
 
 	if rerr != nil {
-		panic(err)
+		return []byte{}, err
 	}
 
 	if resp.Status != "200 OK" {
@@ -105,11 +105,14 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 		os.Exit(-1)
 	}
 
-	return bytes
+	return bytes, nil
 }
 
 func (m *MastodonFetch) GetGlobalTimeline() []Note {
-	d := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+	d, err := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+	if err != nil {
+		return make([]Note, 0)
+	}
 
 	var mNotes []MastodonNote
 	unmarshallJSON[[]MastodonNote](&mNotes, d)
@@ -132,7 +135,10 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	return rnotes
 }
 func (m *MastodonFetch) GetLocalTimeline() []Note {
-	d := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true"})
+	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true"})
+	if err != nil {
+		return make([]Note, 0)
+	}
 
 	var mNotes []MastodonNote
 	unmarshallJSON[[]MastodonNote](&mNotes, d)
@@ -155,7 +161,10 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 	return rnotes
 }
 func (m *MastodonFetch) GetHomeTimeline() []Note {
-	d := m.getData(http.MethodGet, "api/v1/timelines/home", nil, true, false)
+	d, err := m.getData(http.MethodGet, "api/v1/timelines/home", nil, true, false)
+	if err != nil {
+		return make([]Note, 0)
+	}
 
 	var mNotes []MastodonNote
 	unmarshallJSON[[]MastodonNote](&mNotes, d)
@@ -181,7 +190,10 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 func (m *MastodonFetch) GetPost(id string) Note { return Note{} }
 
 func (m *MastodonFetch) GetNotifications() []Notification {
-	d := m.getData(http.MethodGet, "api/v1/notifications", nil, true, false)
+	d, err := m.getData(http.MethodGet, "api/v1/notifications", nil, true, false)
+	if err != nil {
+		return make([]Notification, 0)
+	}
 
 	var mnotis []MastodonNotification
 	unmarshallJSON[[]MastodonNotification](&mnotis, d)
