@@ -66,7 +66,6 @@ func (ns *NotificationScreen) InitScene(screen tcell.Screen, ctx ApplicationCont
 	autoRef := func() { ns.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
 
-	screen.Clear()
 	ns.drawNotis(screen, ctx)
 }
 

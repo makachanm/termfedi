@@ -72,8 +72,6 @@ func (t *TerminalMainApp) Mainloop() {
 	t.scenes[t.currunt_scene].InitScene(t.screen, t.appctx)
 
 	for {
-		need_full_redraw := false
-
 		select {
 		case <-t.termination_signal:
 			close(t.termination_signal)
@@ -84,9 +82,15 @@ func (t *TerminalMainApp) Mainloop() {
 		case target := <-t.transision_signal:
 			if _, ok := t.scenes[target]; ok {
 				t.currunt_scene = target
-				need_full_redraw = true
 			}
+
+			t.screen.Clear()
+			t.screen.Show()
+
 			t.scenes[t.currunt_scene].InitScene(t.screen, t.appctx)
+			t.DrawStatusBar()
+			t.screen.Show()
+			continue
 
 		default:
 		}
@@ -95,11 +99,7 @@ func (t *TerminalMainApp) Mainloop() {
 
 		switch event.(type) {
 		case *tcell.EventResize:
-			need_full_redraw = true
 			t.scenes[t.currunt_scene].WindowChangedScene(t.screen, t.appctx)
-		}
-
-		if need_full_redraw {
 			t.screen.Clear()
 			t.screen.Sync()
 		}

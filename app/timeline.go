@@ -34,11 +34,11 @@ const (
 func curruntTimeline(tl CurruntTL) string {
 	switch tl {
 	case CURRUNTTL_GLOBAL:
-		return "GlobTL"
+		return "Glob"
 	case CURRUNTTL_HOME:
-		return "HomeTL"
+		return "Home"
 	case CURRUNTTL_LOCAL:
-		return "LoclTL"
+		return "Locl"
 	default:
 		return "Unknown"
 	}
@@ -107,7 +107,6 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 	}
 	time.AfterFunc(time.Second*30, autoRef)
 
-	screen.Clear()
 	ts.drawNotes(screen, ctx)
 }
 
