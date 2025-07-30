@@ -159,12 +159,9 @@ func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContex
 	for _, item := range items {
 		ts.Timelines.PutItem(item)
 	}
-
-	//ts.drawNotes(screen, ctx)
 }
 
 func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ctx.RequestFullRedraw()
 	ts.refreshData(screen, ctx)
 
 	autoRef := func() { ts.autoRefresh(screen, ctx) }

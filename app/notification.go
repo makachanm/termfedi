@@ -106,16 +106,11 @@ func (ns *NotificationScreen) refreshData(screen tcell.Screen, ctx ApplicationCo
 	for _, item := range items {
 		ns.Notifications.PutItem(item)
 	}
-	ns.drawNotis(screen, ctx)
 
 }
 
 func (ns *NotificationScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ns.Notifications.Clear()
-	items := ns.FetchLayer.GetNotifications()
-	for _, item := range items {
-		ns.Notifications.PutItem(item)
-	}
+	ns.refreshData(screen, ctx)
 
 	autoRef := func() { ns.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
