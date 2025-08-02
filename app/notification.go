@@ -33,7 +33,7 @@ type NotificationScreen struct {
 
 func NewNotificationScreen(cfg config.Configuration) *NotificationScreen {
 	ts := new(NotificationScreen)
-	ts.Notifications = utils.NewItemAutoDemandPagination[layer.Notification](20, 5)
+	ts.Notifications = utils.NewItemAutoDemandPagination[layer.Notification](40, 5)
 
 	var vlayer layer.FetchActionBase
 	switch cfg.Session.Type {

@@ -12,6 +12,7 @@ type ApplicationContext interface {
 	Exit(exitcode int)
 	TranslateTo(name string)
 	DrawFooterbar(content string)
+	GetCurruntScene() string
 }
 
 type Configuration struct {

@@ -25,7 +25,7 @@ func NewTerminalScreen() *TerminalMainApp {
 	app.termination_signal = make(chan int, 1)
 	app.transision_signal = make(chan string, 1)
 
-	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal)
+	app.appctx = NewMainAppCtx(app.termination_signal, app.transision_signal, app.DrawStatusBar, &app.currunt_scene)
 	return app
 }
 
@@ -54,11 +54,11 @@ func (t *TerminalMainApp) RegisterScene(name string, scene ApplicationScene) {
 }
 
 // TODO: add global event handling
-func (t *TerminalMainApp) DrawStatusBar() {
+func (t *TerminalMainApp) DrawStatusBar(input string) {
 	w, h := t.screen.Size()
 	textStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorWhite)
 
-	text := t.appctx.GetFooterbar()
+	text := input
 	nullspace := w - len(text)
 
 	for i := 0; i < nullspace; i++ {
@@ -88,7 +88,6 @@ func (t *TerminalMainApp) Mainloop() {
 			t.screen.Show()
 
 			t.scenes[t.currunt_scene].InitScene(t.screen, t.appctx)
-			t.DrawStatusBar()
 			t.screen.Show()
 			continue
 
@@ -105,7 +104,6 @@ func (t *TerminalMainApp) Mainloop() {
 		}
 
 		t.scenes[t.currunt_scene].DoScene(t.screen, event, t.appctx)
-		t.DrawStatusBar()
 		t.screen.Show()
 	}
 }
@@ -113,15 +111,18 @@ func (t *TerminalMainApp) Mainloop() {
 type MainAppContexts struct {
 	termination_signal chan int
 	transision_signal  chan string
+	scene              *string
 
-	Footer string
+	FooterFunc func(string)
 }
 
-func NewMainAppCtx(termsig chan int, transsig chan string) *MainAppContexts {
+func NewMainAppCtx(termsig chan int, transsig chan string, footerfunc func(string), scene *string) *MainAppContexts {
 	Ctx := new(MainAppContexts)
 
 	Ctx.termination_signal = termsig
 	Ctx.transision_signal = transsig
+	Ctx.FooterFunc = footerfunc
+	Ctx.scene = scene
 
 	return Ctx
 }
@@ -135,9 +136,9 @@ func (m *MainAppContexts) TranslateTo(name string) {
 }
 
 func (m *MainAppContexts) DrawFooterbar(content string) {
-	m.Footer = content
+	m.FooterFunc(content)
 }
 
-func (m *MainAppContexts) GetFooterbar() string {
-	return m.Footer
+func (m *MainAppContexts) GetCurruntScene() string {
+	return *m.scene
 }

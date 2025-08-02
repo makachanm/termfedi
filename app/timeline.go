@@ -105,7 +105,7 @@ func (ts *TimelineScreen) InitScene(screen tcell.Screen, ctx ApplicationContext)
 	autoRef := func() {
 		ts.autoRefresh(screen, ctx)
 	}
-	time.AfterFunc(time.Second*30, autoRef)
+	time.AfterFunc(time.Second*20, autoRef)
 
 	ts.drawNotes(screen, ctx)
 }
@@ -116,6 +116,7 @@ func (ts *TimelineScreen) WindowChangedScene(screen tcell.Screen, ctx Applicatio
 }
 
 func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx ApplicationContext) {
+
 	ts.drawNotes(screen, ctx)
 
 	switch ev := event.(type) {
@@ -125,7 +126,7 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 			ctx.Exit(0)
 
 		case tcell.KeyCtrlR:
-			ts.refreshData(screen, ctx)
+			ts.refreshData()
 
 		case tcell.KeyCtrlE:
 			switch ts.currunt_tl {
@@ -137,7 +138,7 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 				ts.currunt_tl = CURRUNTTL_HOME
 			}
 
-			ts.refreshData(screen, ctx)
+			ts.refreshData()
 
 		case tcell.KeyCtrlN:
 			ctx.TranslateTo("noti")
@@ -156,23 +157,39 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 	}
 }
 
-func (ts *TimelineScreen) refreshData(screen tcell.Screen, ctx ApplicationContext) {
+func (ts *TimelineScreen) refreshData() {
+	ts.timelinelock.Lock()
 	ts.Timelines.Clear()
+
+	currunt_pos := ts.Timelines.GetCurruntPagePointer()
 
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
 	for _, item := range items {
 		ts.Timelines.PutItem(item)
 	}
+
+	for i := 0; i < currunt_pos; i++ {
+		ts.Timelines.GoNext()
+	}
+
+	ts.timelinelock.Unlock()
 }
 
 func (ts *TimelineScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ts.refreshData(screen, ctx)
+	ts.refreshData()
+
+	if ctx.GetCurruntScene() == "main" {
+		screen.Clear()
+		ts.drawNotes(screen, ctx)
+		screen.Show()
+	}
 
 	autoRef := func() { ts.autoRefresh(screen, ctx) }
-	time.AfterFunc(time.Second*30, autoRef)
+	time.AfterFunc(time.Second*20, autoRef)
 }
 
 func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext) {
+	ts.timelinelock.Lock()
 	textStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack)
 
 	items := ts.Timelines.GetCurruntPage()
@@ -183,4 +200,5 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
 
 	ctx.DrawFooterbar(footer)
+	ts.timelinelock.Unlock()
 }
