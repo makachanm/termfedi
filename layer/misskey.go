@@ -91,7 +91,7 @@ func (m *MisskeyFetch) GetGlobalTimeline() []Note {
 		rnotes[i].Visiblity = platformVisblityToValue(mnotes[i].Visibility)
 
 		if mnotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mnotes[i].Spoilerwarning
+			rnotes[i].Spoiler = *mnotes[i].Spoilerwarning
 		}
 	}
 
@@ -114,7 +114,7 @@ func (m *MisskeyFetch) GetLocalTimeline() []Note {
 		rnotes[i].Visiblity = platformVisblityToValue(mnotes[i].Visibility)
 
 		if mnotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mnotes[i].Spoilerwarning
+			rnotes[i].Spoiler = *mnotes[i].Spoilerwarning
 		}
 	}
 
@@ -137,7 +137,7 @@ func (m *MisskeyFetch) GetHomeTimeline() []Note {
 		rnotes[i].Visiblity = platformVisblityToValue(mnotes[i].Visibility)
 
 		if mnotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mnotes[i].Spoilerwarning
+			rnotes[i].Spoiler = *mnotes[i].Spoilerwarning
 		}
 	}
 

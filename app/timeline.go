@@ -66,6 +66,7 @@ type TimelineScreen struct {
 	currunt_tl CurruntTL
 
 	config config.Configuration
+	showcw bool
 }
 
 func NewTimelineScreen(cfg config.Configuration) *TimelineScreen {
@@ -94,6 +95,7 @@ func NewTimelineScreen(cfg config.Configuration) *TimelineScreen {
 	}
 
 	ts.config = cfg
+	ts.showcw = false
 
 	return ts
 }
@@ -139,6 +141,15 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 			}
 
 			ts.refreshData()
+
+		case tcell.KeyCtrlQ:
+			if ts.showcw {
+				ts.showcw = false
+			} else {
+				ts.showcw = true
+			}
+			screen.Clear()
+			ts.drawNotes(screen, ctx)
 
 		case tcell.KeyCtrlN:
 			ctx.TranslateTo("noti")
@@ -194,10 +205,10 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 
 	items := ts.Timelines.GetCurruntPage()
 	for i, notes := range items {
-		component.DrawNoteComponent(0, i*ts.config.UI.MaxItemHeight, notes, screen, textStyle, ts.config.UI.MaxItemHeight)
+		component.DrawNoteComponent(0, i*ts.config.UI.MaxItemHeight, notes, screen, textStyle, ts.config.UI.MaxItemHeight, ts.showcw)
 	}
 
-	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [Comp] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [CW] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
 
 	ctx.DrawFooterbar(footer)
 	ts.timelinelock.Unlock()

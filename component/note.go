@@ -18,7 +18,7 @@ import (
 	- Visiblity Range
 */
 
-func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tcell.Style, maxheight int) {
+func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tcell.Style, maxheight int, viewcw bool) {
 	w, _ := ctx.Size()
 
 	name := fmt.Sprintf("%s (@%s)", note.Author_name, note.Author_finger)
@@ -28,10 +28,31 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 
 	utils.WriteTo(ctx, x+1, y, name, style)
 
-	content := note.Content
+	var content string
+
+	if len(note.Spoiler) > 0 {
+		if viewcw {
+			content = note.Content
+		} else {
+			content = fmt.Sprintf("CW: %s", note.Spoiler)
+		}
+	} else {
+		content = note.Content
+	}
+
+	if note.IsRenote {
+		content = note.Renote
+	}
+
 	content = strings.ReplaceAll(content, "\n", "<br>")
 
 	var render_targets []string = make([]string, 0)
+
+	if note.HasMedia {
+		for _, media := range note.Medias {
+			render_targets = append(render_targets, fmt.Sprintf("[Image: %s]", media))
+		}
+	}
 
 	var result strings.Builder
 	htmls := html.NewTokenizer(strings.NewReader(content))
@@ -70,7 +91,7 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 
 	for i, ntx := range render_targets {
 		utils.WriteTo(ctx, x+1, y+1+i, ntx, style)
-		if i >= maxheight-3 {
+		if i >= maxheight-4 {
 			break
 		}
 	}

@@ -127,9 +127,24 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
 		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
 
-		if mNotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		if mNotes[i].RenotedField != nil {
+			rnotes[i].IsRenote = true
+			rnotes[i].Renote = "Renote: " + mNotes[i].RenotedField.Content
+		} else {
+			rnotes[i].IsRenote = false
 		}
+
+		if len(mNotes[i].Medias) >= 1 {
+			rnotes[i].HasMedia = true
+			for _, data := range mNotes[i].Medias {
+				rnotes[i].Medias = append(rnotes[i].Medias, data.URL)
+			}
+		} else {
+			rnotes[i].HasMedia = false
+		}
+
+		rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+
 	}
 
 	return rnotes
@@ -152,10 +167,24 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 		rnotes[i].RenoteCount = mNotes[i].ReblogsCount
 		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
 		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
-
-		if mNotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		if mNotes[i].RenotedField != nil {
+			rnotes[i].IsRenote = true
+			rnotes[i].Renote = "RN: " + mNotes[i].RenotedField.Content
+		} else {
+			rnotes[i].IsRenote = false
 		}
+
+		if len(mNotes[i].Medias) >= 1 {
+			rnotes[i].HasMedia = true
+			for _, data := range mNotes[i].Medias {
+				rnotes[i].Medias = append(rnotes[i].Medias, data.URL)
+			}
+		} else {
+			rnotes[i].HasMedia = false
+		}
+
+		rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+
 	}
 
 	return rnotes
@@ -179,9 +208,23 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 		rnotes[i].ReactionCount = mNotes[i].FavouritesCount
 		rnotes[i].Visiblity = platformVisblityToValue(mNotes[i].Visibility)
 
-		if mNotes[i].Spoilerwarning != nil {
-			rnotes[i].Spoiler = mNotes[i].Spoilerwarning
+		if mNotes[i].RenotedField != nil {
+			rnotes[i].IsRenote = true
+			rnotes[i].Renote = "RN: " + mNotes[i].RenotedField.Content
+		} else {
+			rnotes[i].IsRenote = false
 		}
+
+		if len(mNotes[i].Medias) >= 1 {
+			rnotes[i].HasMedia = true
+			for _, data := range mNotes[i].Medias {
+				rnotes[i].Medias = append(rnotes[i].Medias, data.URL)
+			}
+		} else {
+			rnotes[i].HasMedia = false
+		}
+
+		rnotes[i].Spoiler = mNotes[i].Spoilerwarning
 	}
 
 	return rnotes

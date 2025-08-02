@@ -79,11 +79,17 @@ type Note struct {
 	Visiblity Visiblity
 	Time      time.Time
 
-	Spoiler *string
+	Spoiler string
 	Content string
 
 	RenoteCount   int
 	ReactionCount int
+
+	HasMedia bool
+	IsRenote bool
+
+	Medias []string
+	Renote string
 }
 
 type User struct {
