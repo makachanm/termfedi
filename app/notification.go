@@ -84,7 +84,7 @@ func (ns *NotificationScreen) DoScene(screen tcell.Screen, event tcell.Event, ct
 			ctx.Exit(0)
 
 		case tcell.KeyCtrlR:
-			ns.refreshData(screen, ctx)
+			ns.refreshData()
 
 		case tcell.KeyCtrlN:
 			ctx.TranslateTo("main")
@@ -105,22 +105,33 @@ func (ns *NotificationScreen) DoScene(screen tcell.Screen, event tcell.Event, ct
 	}
 }
 
-func (ns *NotificationScreen) refreshData(screen tcell.Screen, ctx ApplicationContext) {
+func (ns *NotificationScreen) refreshData() {
 	ns.Notifications.Clear()
+
+	currunt_pos := ns.Notifications.GetCurruntPagePointer()
 
 	items := ns.FetchLayer.GetNotifications()
 	for _, item := range items {
 		ns.Notifications.PutItem(item)
 	}
 
+	for i := 0; i < currunt_pos; i++ {
+		ns.Notifications.GoNext()
+	}
+
 }
 
 func (ns *NotificationScreen) autoRefresh(screen tcell.Screen, ctx ApplicationContext) {
-	ns.refreshData(screen, ctx)
+	ns.refreshData()
+
+	if ctx.GetCurruntScene() == "noti" {
+		screen.Clear()
+		ns.drawNotis(screen, ctx)
+		screen.Show()
+	}
 
 	autoRef := func() { ns.autoRefresh(screen, ctx) }
 	time.AfterFunc(time.Second*30, autoRef)
-
 }
 
 func (ns *NotificationScreen) drawNotis(screen tcell.Screen, ctx ApplicationContext) {
