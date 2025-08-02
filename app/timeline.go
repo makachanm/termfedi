@@ -208,7 +208,7 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 		component.DrawNoteComponent(0, i*ts.config.UI.MaxItemHeight, notes, screen, textStyle, ts.config.UI.MaxItemHeight, ts.showcw)
 	}
 
-	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Rfrh] C-r | [TL] C-e [Noti] C-n [CW] C-q | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Refresh] C-r | [ShowCW] C-q | [Notifications] C-n | [Timeline] C-e | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
 
 	ctx.DrawFooterbar(footer)
 	ts.timelinelock.Unlock()

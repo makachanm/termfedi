@@ -142,7 +142,7 @@ func (ns *NotificationScreen) drawNotis(screen tcell.Screen, ctx ApplicationCont
 		component.DrawNotificationComponent(0, i*ns.config.UI.MaxItemHeight, notes, screen, textStyle, ns.config.UI.MaxItemHeight)
 	}
 
-	footer := fmt.Sprintf(" Noti Page %d/%d | [Quit] C-p | [Rfrh] C-r | [Timeline] C-n | [Prev] <- [Next] -> ", ns.Notifications.GetCurruntPagePointer()+1, ns.Notifications.GetTotalPage()+1)
+	footer := fmt.Sprintf(" Noti Page %d/%d | [Quit] C-p | [Refresh] C-r | [Back] C-e | [Prev] <- [Next] -> ", ns.Notifications.GetCurruntPagePointer()+1, ns.Notifications.GetTotalPage()+1)
 
 	ctx.DrawFooterbar(footer)
 }
