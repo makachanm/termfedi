@@ -129,7 +129,7 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 
 		if mNotes[i].RenotedField != nil {
 			rnotes[i].IsRenote = true
-			rnotes[i].Renote = "Renote of" + mNotes[i].RenotedField.User.Name + ": <br>" + mNotes[i].RenotedField.Content
+			rnotes[i].Renote = "Renote of " + mNotes[i].RenotedField.User.Name + "'s Note: <br>" + mNotes[i].RenotedField.Content
 		} else {
 			rnotes[i].IsRenote = false
 		}
@@ -210,7 +210,7 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 
 		if mNotes[i].RenotedField != nil {
 			rnotes[i].IsRenote = true
-			rnotes[i].Renote = "Renote of" + mNotes[i].RenotedField.User.Name + ": <br>" + mNotes[i].RenotedField.Content
+			rnotes[i].Renote = "Renote of " + mNotes[i].RenotedField.User.Name + "'s Note: <br>" + mNotes[i].RenotedField.Content
 		} else {
 			rnotes[i].IsRenote = false
 		}
