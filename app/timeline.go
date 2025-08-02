@@ -170,9 +170,9 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 
 func (ts *TimelineScreen) refreshData() {
 	ts.timelinelock.Lock()
-	ts.Timelines.Clear()
-
 	currunt_pos := ts.Timelines.GetCurruntPagePointer()
+
+	ts.Timelines.Clear()
 
 	items := getTimeline(&ts.FetchLayer, ts.currunt_tl)
 	for _, item := range items {
