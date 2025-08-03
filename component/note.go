@@ -62,25 +62,27 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		tokenType := htmls.Next()
 		switch tokenType {
 		case html.TextToken:
-			h_text := htmls.Token().Data
+			h_text := []rune(htmls.Token().Data)
 			width, _ := ctx.Size()
+
 			if len(h_text) >= width {
-				result.WriteString(h_text[:width])
+				result.WriteString(string(h_text[:width]))
 				render_targets = append(render_targets, result.String())
 				result.Reset()
-				result.WriteString(h_text[width:])
+				result.WriteString(string(h_text[width:]))
 			} else {
-				result.WriteString(h_text)
+				result.WriteString(string(h_text))
 			}
 
 		case html.SelfClosingTagToken, html.StartTagToken:
 			tname, _ := htmls.TagName()
+			h_text := []rune(htmls.Token().Data)
 			if string(tname) == "br" {
-				result.WriteString(htmls.Token().Data)
+				result.WriteString(string(h_text))
 				render_targets = append(render_targets, result.String())
 				result.Reset()
 			} else {
-				result.WriteString(htmls.Token().Data)
+				result.WriteString(string(h_text))
 			}
 
 		case html.ErrorToken:
