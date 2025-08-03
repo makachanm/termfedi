@@ -73,12 +73,13 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, querys map[string]string) ([]byte, error) {
 	spath := strings.Split(path, "/")
 	xurl := m.instance_url.JoinPath(spath...)
-	uquery := xurl.Query()
-	for x, v := range querys {
-		uquery.Set(x, v)
+
+	query := url.Values{}
+	for val, key := range querys {
+		query.Add(val, key)
 	}
 
-	httpreq, err := http.NewRequest(method, xurl.String(), nil)
+	httpreq, err := http.NewRequest(method, fmt.Sprintf("%s?%s", xurl.String(), query.Encode()), nil)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -109,7 +110,7 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 }
 
 func (m *MastodonFetch) GetGlobalTimeline() []Note {
-	d, err := m.getData(http.MethodGet, "api/v1/timelines/public", nil, false, false)
+	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"limit": "40"})
 	if err != nil {
 		return make([]Note, 0)
 	}
@@ -150,7 +151,7 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	return rnotes
 }
 func (m *MastodonFetch) GetLocalTimeline() []Note {
-	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true"})
+	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true", "limit": "40"})
 	if err != nil {
 		return make([]Note, 0)
 	}
@@ -190,7 +191,7 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 	return rnotes
 }
 func (m *MastodonFetch) GetHomeTimeline() []Note {
-	d, err := m.getData(http.MethodGet, "api/v1/timelines/home", nil, true, false)
+	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/home", true, map[string]string{"limit": "40"})
 	if err != nil {
 		return make([]Note, 0)
 	}

@@ -76,7 +76,7 @@ func NewTimelineScreen(cfg config.Configuration) *TimelineScreen {
 	switch cfg.Session.Type {
 	case config.Mastodon:
 		vlayer = layer.NewMastodonFetch(cfg.Session.Token, cfg.Session.Url)
-		ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](20, 5)
+		ts.Timelines = utils.NewItemAutoDemandPagination[layer.Note](40, 5)
 
 	case config.Misskey:
 		vlayer = layer.NewMisskeyFetch(cfg.Session.Token, cfg.Session.Url)
