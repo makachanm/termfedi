@@ -103,7 +103,6 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 
 	if resp.Status != "200 OK" {
 		fmt.Println("ERROR:", string(bytes))
-		os.Exit(-1)
 	}
 
 	return bytes, nil
@@ -116,7 +115,11 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	}
 
 	var mNotes []MastodonNote
-	unmarshallJSON[[]MastodonNote](&mNotes, d)
+	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
+	if !errs {
+		fmt.Println("Failed to unmarshal Mastodon notes")
+		return make([]Note, 0)
+	}
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -157,7 +160,11 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 	}
 
 	var mNotes []MastodonNote
-	unmarshallJSON[[]MastodonNote](&mNotes, d)
+	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
+	if !errs {
+		fmt.Println("Failed to unmarshal Mastodon notes")
+		return make([]Note, 0)
+	}
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -197,7 +204,11 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 	}
 
 	var mNotes []MastodonNote
-	unmarshallJSON[[]MastodonNote](&mNotes, d)
+	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
+	if !errs {
+		fmt.Println("Failed to unmarshal Mastodon notes")
+		return make([]Note, 0)
+	}
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -240,7 +251,11 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 	}
 
 	var mnotis []MastodonNotification
-	unmarshallJSON[[]MastodonNotification](&mnotis, d)
+	errs := unmarshallJSON[[]MastodonNotification](&mnotis, d)
+	if !errs {
+		fmt.Println("Failed to unmarshal Mastodon notes")
+		return make([]Notification, 0)
+	}
 
 	var rnotis []Notification = make([]Notification, len(mnotis))
 	for i := 0; i < len(mnotis); i++ {
