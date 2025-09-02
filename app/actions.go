@@ -17,7 +17,11 @@ func init() {
 }
 
 func insertActionTargets(notes []layer.Note) {
-	ActionTimelineNoteData = notes
+	ActionTimelineNoteData = append(ActionTimelineNoteData, notes...)
+}
+
+func clearActionTargets() {
+	ActionTimelineNoteData = make([]layer.Note, 0)
 }
 
 type ActionType int
@@ -95,9 +99,11 @@ func (as *ActionScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Appl
 			switch as.action_mode {
 			case REACT:
 				as.FetchLayer.PostReaction(ActionTimelineNoteData[as.selection].Id)
+				clearActionTargets()
 				ctx.TranslateTo("main")
 			case RENOTE:
 				as.FetchLayer.PostRenote(ActionTimelineNoteData[as.selection].Id)
+				clearActionTargets()
 				ctx.TranslateTo("main")
 			}
 		}
