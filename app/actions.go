@@ -77,6 +77,7 @@ func (as *ActionScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Appl
 	case *tcell.EventKey:
 		switch ev.Key() {
 		case tcell.KeyCtrlX:
+			clearActionTargets()
 			ctx.TranslateTo("main")
 
 		case tcell.KeyLeft:
