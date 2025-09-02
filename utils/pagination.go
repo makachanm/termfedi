@@ -78,6 +78,10 @@ func (p *ItemAutoDemandPagination[T]) GetCurruntPagePointer() int {
 }
 
 func (p *ItemAutoDemandPagination[T]) GetCurruntPage() []T {
+	if len(p.items) == 0 {
+		return make([]T, 0)
+	}
+
 	var start_pos, end_pos int
 
 	if p.currunt_page_pointer <= 0 {

@@ -5,12 +5,10 @@ type FetchActionBase interface {
 	GetLocalTimeline() []Note
 	GetHomeTimeline() []Note
 
-	GetPost(id string) Note
-
 	GetNotifications() []Notification
-	GetNotification(id string) Notification
 
-	GetUser(id string) User
+	PostRenote(note_id string) bool
+	PostReaction(note_id string) bool
 }
 
 type DataFetch struct {
@@ -33,31 +31,14 @@ func (f *DataFetch) GetHomeTimeline() []Note {
 	return f.base.GetHomeTimeline()
 }
 
-func (f *DataFetch) GetPost(id string) Note {
-	return f.base.GetPost(id)
-}
-
-func (f *DataFetch) GetUser(id string) User {
-	return f.base.GetUser(id)
-}
-
-func (f *DataFetch) GetNotification(id string) Notification {
-	return f.base.GetNotification(id)
-}
-
 func (f *DataFetch) GetNotifications() []Notification {
 	return f.base.GetNotifications()
 }
 
-type SendActionBase interface {
+func (f *DataFetch) PostRenote(note_id string) bool {
+	return f.base.PostRenote(note_id)
 }
 
-type DataSend struct {
-	base FetchActionBase
-}
-
-type DeleteActionBase interface {
-}
-
-type OtherActionBase interface {
+func (f *DataFetch) PostReaction(note_id string) bool {
+	return f.base.PostReaction(note_id)
 }

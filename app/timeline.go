@@ -151,6 +151,10 @@ func (ts *TimelineScreen) DoScene(screen tcell.Screen, event tcell.Event, ctx Ap
 			screen.Clear()
 			ts.drawNotes(screen, ctx)
 
+		case tcell.KeyCtrlX:
+			insertActionTargets(ts.Timelines.GetCurruntPage())
+			ctx.TranslateTo("action")
+
 		case tcell.KeyCtrlN:
 			ctx.TranslateTo("noti")
 
@@ -208,7 +212,7 @@ func (ts *TimelineScreen) drawNotes(screen tcell.Screen, ctx ApplicationContext)
 		component.DrawNoteComponent(0, i*ts.config.UI.MaxItemHeight, notes, screen, textStyle, ts.config.UI.MaxItemHeight, ts.showcw)
 	}
 
-	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Refresh] C-r | [ShowCW] C-q | [Notifications] C-n | [Timeline] C-e | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
+	footer := fmt.Sprintf(" %s Page %d/%d | [Quit] C-p | [Refresh] C-r | [ShowCW] C-q | [Notifications] C-n | [Actions] C-x | [Timeline] C-e | [Prev] <- [Next] -> ", curruntTimeline(ts.currunt_tl), ts.Timelines.GetCurruntPagePointer()+1, ts.Timelines.GetTotalPage()+1)
 
 	ctx.DrawFooterbar(footer)
 	ts.timelinelock.Unlock()

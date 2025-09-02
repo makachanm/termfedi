@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -68,7 +67,6 @@ func (m *MisskeyFetch) getData(path string, data interface{}, authneed bool, has
 
 	if resp.Status != "200 OK" {
 		fmt.Println("ERROR:", string(bytes))
-		os.Exit(-1)
 	}
 
 	return bytes
@@ -144,12 +142,53 @@ func (m *MisskeyFetch) GetHomeTimeline() []Note {
 	return rnotes
 }
 
-func (m *MisskeyFetch) GetPost(id string) Note { return Note{} }
-
 func (m *MisskeyFetch) GetNotifications() []Notification {
-	return []Notification{}
+	d := m.getData("api/i/notifications", MisskeyNoteTransaction{Limit: 100}, true, true)
+
+	var mnotis []MisskeyNotification
+	unmarshallJSON[[]MisskeyNotification](&mnotis, d)
+
+	var rnotis []Notification = make([]Notification, len(mnotis))
+	for i := 0; i < len(mnotis); i++ {
+		n_type := platformNotiTypeToValue(mnotis[i].Type)
+		if n_type == NOTI_UNSUPPORTED {
+			continue
+		}
+
+		rnotis[i].Id = mnotis[i].Id
+		rnotis[i].Type = n_type
+
+		switch n_type {
+		case NOTI_MENTION:
+			if mnotis[i].Status.Contents != "" {
+				rnotis[i].Content = mnotis[i].Status.Contents
+			}
+			if len(mnotis[i].Status.Mentions) > 0 {
+				rnotis[i].ReactedUser = User{
+					Id:          mnotis[i].Status.Mentions[0].Id,
+					User_name:   mnotis[i].Status.Mentions[0].Username,
+					User_finger: mnotis[i].Status.Mentions[0].Acct,
+				}
+			}
+		case NOTI_FOLLOW, NOTI_FAVOURITE, NOTI_RENOTE:
+			if mnotis[i].Status.Contents != "" {
+				rnotis[i].Content = mnotis[i].Status.Contents
+			}
+			rnotis[i].ReactedUser = User{
+				Id:          mnotis[i].Account.Id,
+				User_name:   mnotis[i].Account.Username,
+				User_finger: mnotis[i].Account.Acct,
+			}
+		}
+	}
+
+	return rnotis
 }
 
-func (m *MisskeyFetch) GetNotification(id string) Notification { return Notification{} }
+func (m *MisskeyFetch) PostRenote(note_id string) bool {
+	return true
+}
 
-func (m *MisskeyFetch) GetUser(id string) User { return User{} }
+func (m *MisskeyFetch) PostReaction(note_id string) bool {
+	return true
+}

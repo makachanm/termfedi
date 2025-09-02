@@ -117,7 +117,7 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		fmt.Println("Failed to unmarshal Mastodon notes")
+		//fmt.Println("Failed to unmarshal Mastodon notes")
 		return make([]Note, 0)
 	}
 
@@ -162,7 +162,7 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		fmt.Println("Failed to unmarshal Mastodon notes")
+		//fmt.Println("Failed to unmarshal Mastodon notes")
 		return make([]Note, 0)
 	}
 
@@ -206,7 +206,7 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		fmt.Println("Failed to unmarshal Mastodon notes")
+		//fmt.Println("Failed to unmarshal Mastodon notes")
 		return make([]Note, 0)
 	}
 
@@ -242,8 +242,6 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 	return rnotes
 }
 
-func (m *MastodonFetch) GetPost(id string) Note { return Note{} }
-
 func (m *MastodonFetch) GetNotifications() []Notification {
 	d, err := m.getData(http.MethodGet, "api/v1/notifications", nil, true, false)
 	if err != nil {
@@ -253,7 +251,7 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 	var mnotis []MastodonNotification
 	errs := unmarshallJSON[[]MastodonNotification](&mnotis, d)
 	if !errs {
-		fmt.Println("Failed to unmarshal Mastodon notes")
+		//fmt.Println("Failed to unmarshal Mastodon notes")
 		return make([]Notification, 0)
 	}
 
@@ -289,6 +287,15 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 	return rnotis
 }
 
-func (m *MastodonFetch) GetNotification(id string) Notification { return Notification{} }
+func (m *MastodonFetch) PostRenote(note_id string) bool {
+	_, err := m.getData(http.MethodPost, fmt.Sprintf("api/v1/statuses/%s/reblog", note_id), nil, true, false)
 
-func (m *MastodonFetch) GetUser(id string) User { return User{} }
+	return err == nil
+}
+
+func (m *MastodonFetch) PostReaction(note_id string) bool {
+	// Mastodon only has favourite
+	_, err := m.getData(http.MethodPost, fmt.Sprintf("api/v1/statuses/%s/favourite", note_id), nil, true, false)
+
+	return err == nil
+}

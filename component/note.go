@@ -19,10 +19,10 @@ import (
 */
 
 func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tcell.Style, maxheight int, viewcw bool) {
-	w, _ := ctx.Size()
+	width, _ := ctx.Size()
 
 	name := fmt.Sprintf("%s (@%s)", note.Author_name, note.Author_finger)
-	if len(name) >= w {
+	if len(name) >= width {
 		name = fmt.Sprintf("%s (...)", note.Author_name)
 	}
 
@@ -63,8 +63,6 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		switch tokenType {
 		case html.TextToken:
 			h_text := []rune(htmls.Token().Data)
-			width, _ := ctx.Size()
-
 			if len(h_text) >= width {
 				result.WriteString(string(h_text[:width]))
 				render_targets = append(render_targets, result.String())
@@ -84,7 +82,6 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 			} else {
 				result.WriteString(string(h_text))
 			}
-
 		case html.ErrorToken:
 			render_targets = append(render_targets, result.String())
 			loops = false

@@ -19,5 +19,6 @@ func main() {
 
 	m.RegisterScene("main", app.NewTimelineScreen(cnf))
 	m.RegisterScene("noti", app.NewNotificationScreen(cnf))
+	m.RegisterScene("action", app.NewActionScreen(cnf))
 	m.Mainloop()
 }
