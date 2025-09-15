@@ -6,8 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
+
+	"github.com/makachanm/flogger-lib"
 )
 
 type MastodonFetch struct {
@@ -17,12 +18,14 @@ type MastodonFetch struct {
 
 func NewMastodonFetch(token string, insurl string) *MastodonFetch {
 	var err error
+	flogger.Printf("Initializing MastodonFetch for instance %s", insurl)
 
 	mastodon := new(MastodonFetch)
 	mastodon.instance_url, err = url.Parse(insurl)
 	mastodon.token = token
 
 	if err != nil {
+		flogger.Errorf("Failed to parse instance url: %v", err)
 		panic(err)
 	}
 
@@ -32,6 +35,7 @@ func NewMastodonFetch(token string, insurl string) *MastodonFetch {
 func (m *MastodonFetch) getData(method string, path string, data interface{}, authneed bool, hasdata bool) ([]byte, error) {
 	spath := strings.Split(path, "/")
 	xurl := m.instance_url.JoinPath(spath...)
+	flogger.Printf("Mastodon API call: %s %s", method, xurl.String())
 
 	var bodyreader *bytes.Reader
 	if hasdata {
@@ -42,7 +46,7 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 
 	httpreq, err := http.NewRequest(method, xurl.String(), bodyreader)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to create http request: %v", err)
 	}
 
 	if authneed {
@@ -52,19 +56,19 @@ func (m *MastodonFetch) getData(method string, path string, data interface{}, au
 
 	resp, herr := http.DefaultClient.Do(httpreq)
 	if herr != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to execute http request: %v", herr)
 	}
 	defer resp.Body.Close()
 
 	bytes, rerr := io.ReadAll(resp.Body)
 
 	if rerr != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to read response body: %v", rerr)
 	}
 
-	if resp.Status != "200 OK" {
-		fmt.Println("ERROR:", string(bytes))
-		os.Exit(-1)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		flogger.Errorf("Mastodon API error: %s, %s", resp.Status, string(bytes))
+		return bytes, fmt.Errorf("mastodon API error: %s", resp.Status)
 	}
 
 	return bytes, nil
@@ -78,10 +82,12 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 	for val, key := range querys {
 		query.Add(val, key)
 	}
+	fullUrl := fmt.Sprintf("%s?%s", xurl.String(), query.Encode())
+	flogger.Printf("Mastodon API call: %s %s", method, fullUrl)
 
-	httpreq, err := http.NewRequest(method, fmt.Sprintf("%s?%s", xurl.String(), query.Encode()), nil)
+	httpreq, err := http.NewRequest(method, fullUrl, nil)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to create http request: %v", err)
 	}
 
 	if authneed {
@@ -91,18 +97,19 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 
 	resp, herr := http.DefaultClient.Do(httpreq)
 	if herr != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to execute http request: %v", herr)
 	}
 	defer resp.Body.Close()
 
 	bytes, rerr := io.ReadAll(resp.Body)
 
 	if rerr != nil {
-		return []byte{}, err
+		return []byte{}, flogger.Errorf("Failed to read response body: %v", rerr)
 	}
 
-	if resp.Status != "200 OK" {
-		fmt.Println("ERROR:", string(bytes))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		flogger.Errorf("Mastodon API error: %s, %s", resp.Status, string(bytes))
+		return bytes, fmt.Errorf("mastodon API error: %s", resp.Status)
 	}
 
 	return bytes, nil
@@ -111,15 +118,17 @@ func (m *MastodonFetch) getQueryData(method string, path string, authneed bool, 
 func (m *MastodonFetch) GetGlobalTimeline() []Note {
 	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"limit": "40"})
 	if err != nil {
+		flogger.Errorf("Failed to get global timeline: %v", err)
 		return make([]Note, 0)
 	}
 
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		//fmt.Println("Failed to unmarshal Mastodon notes")
+		flogger.Errorf("Failed to unmarshal Mastodon notes for global timeline")
 		return make([]Note, 0)
 	}
+	flogger.Printf("Fetched %d notes from global timeline", len(mNotes))
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -156,15 +165,17 @@ func (m *MastodonFetch) GetGlobalTimeline() []Note {
 func (m *MastodonFetch) GetLocalTimeline() []Note {
 	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/public", true, map[string]string{"local": "true", "limit": "40"})
 	if err != nil {
+		flogger.Errorf("Failed to get local timeline: %v", err)
 		return make([]Note, 0)
 	}
 
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		//fmt.Println("Failed to unmarshal Mastodon notes")
+		flogger.Errorf("Failed to unmarshal Mastodon notes for local timeline")
 		return make([]Note, 0)
 	}
+	flogger.Printf("Fetched %d notes from local timeline", len(mNotes))
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -200,15 +211,17 @@ func (m *MastodonFetch) GetLocalTimeline() []Note {
 func (m *MastodonFetch) GetHomeTimeline() []Note {
 	d, err := m.getQueryData(http.MethodGet, "api/v1/timelines/home", true, map[string]string{"limit": "40"})
 	if err != nil {
+		flogger.Errorf("Failed to get home timeline: %v", err)
 		return make([]Note, 0)
 	}
 
 	var mNotes []MastodonNote
 	errs := unmarshallJSON[[]MastodonNote](&mNotes, d)
 	if !errs {
-		//fmt.Println("Failed to unmarshal Mastodon notes")
+		flogger.Errorf("Failed to unmarshal Mastodon notes for home timeline")
 		return make([]Note, 0)
 	}
+	flogger.Printf("Fetched %d notes from home timeline", len(mNotes))
 
 	var rnotes []Note = make([]Note, len(mNotes))
 	for i := 0; i < len(mNotes); i++ {
@@ -245,15 +258,17 @@ func (m *MastodonFetch) GetHomeTimeline() []Note {
 func (m *MastodonFetch) GetNotifications() []Notification {
 	d, err := m.getData(http.MethodGet, "api/v1/notifications", nil, true, false)
 	if err != nil {
+		flogger.Errorf("Failed to get notifications: %v", err)
 		return make([]Notification, 0)
 	}
 
 	var mnotis []MastodonNotification
 	errs := unmarshallJSON[[]MastodonNotification](&mnotis, d)
 	if !errs {
-		//fmt.Println("Failed to unmarshal Mastodon notes")
+		flogger.Errorf("Failed to unmarshal Mastodon notifications")
 		return make([]Notification, 0)
 	}
+	flogger.Printf("Fetched %d notifications", len(mnotis))
 
 	var rnotis []Notification = make([]Notification, len(mnotis))
 	for i := 0; i < len(mnotis); i++ {
@@ -268,10 +283,12 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 		switch n_type {
 		case NOTI_MENTION:
 			rnotis[i].Content = mnotis[i].Status.Contents
-			rnotis[i].ReactedUser = User{
-				Id:          mnotis[i].Status.Mentions[0].Id,
-				User_name:   mnotis[i].Status.Mentions[0].Username,
-				User_finger: mnotis[i].Status.Mentions[0].Acct,
+			if len(mnotis[i].Status.Mentions) > 0 {
+				rnotis[i].ReactedUser = User{
+					Id:          mnotis[i].Status.Mentions[0].Id,
+					User_name:   mnotis[i].Status.Mentions[0].Username,
+					User_finger: mnotis[i].Status.Mentions[0].Acct,
+				}
 			}
 
 		case NOTI_FOLLOW, NOTI_FAVOURITE, NOTI_RENOTE:
@@ -288,14 +305,20 @@ func (m *MastodonFetch) GetNotifications() []Notification {
 }
 
 func (m *MastodonFetch) PostRenote(note_id string) bool {
+	flogger.Printf("Posting renote for note %s", note_id)
 	_, err := m.getData(http.MethodPost, fmt.Sprintf("api/v1/statuses/%s/reblog", note_id), nil, true, false)
-
+	if err != nil {
+		flogger.Errorf("Failed to post renote: %v", err)
+	}
 	return err == nil
 }
 
 func (m *MastodonFetch) PostReaction(note_id string) bool {
+	flogger.Printf("Posting reaction for note %s", note_id)
 	// Mastodon only has favourite
 	_, err := m.getData(http.MethodPost, fmt.Sprintf("api/v1/statuses/%s/favourite", note_id), nil, true, false)
-
+	if err != nil {
+		flogger.Errorf("Failed to post reaction: %v", err)
+	}
 	return err == nil
 }

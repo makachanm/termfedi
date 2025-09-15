@@ -3,17 +3,23 @@ package main
 import (
 	"termfedi/app"
 	"termfedi/config"
+
+	"github.com/makachanm/flogger-lib"
 )
 
 func main() {
+	flogger.Println("Starting termfedi")
+
 	cnf, err := config.LoadConfig()
 	if err != nil {
+		flogger.Errorf("Failed to load config: %v", err)
 		panic(err)
 	}
 
 	m := app.NewTerminalScreen()
 	err = m.InitTerminalScreen()
 	if err != nil {
+		flogger.Errorf("Failed to init terminal screen: %v", err)
 		panic(err)
 	}
 

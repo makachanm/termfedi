@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -16,7 +17,11 @@ func LoadConfig() (Configuration, error) {
 	}
 
 	if _, err := os.Stat(filepath.Join(wd, "config.json")); os.IsNotExist(err) {
-		return Configuration{}, errors.New("config file not exist")
+		excuteable, _ := os.Executable()
+		wd = path.Dir(excuteable)
+		if _, err := os.Stat(filepath.Join(wd, "config.json")); os.IsNotExist(err) {
+			return Configuration{}, errors.New("config file not exist")
+		}
 	}
 
 	ctx, err := os.ReadFile(filepath.Join(wd, "config.json"))
