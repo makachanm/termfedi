@@ -63,6 +63,7 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		switch tokenType {
 		case html.TextToken:
 			h_text := []rune(htmls.Token().Data)
+			width := width - 2  // For indentations
 			if len(h_text) >= width {
 				result.WriteString(string(h_text[:width]))
 				render_targets = append(render_targets, result.String())
@@ -88,13 +89,22 @@ func DrawNoteComponent(x int, y int, note layer.Note, ctx tcell.Screen, style tc
 		}
 	}
 
-	for i, ntx := range render_targets {
-		utils.WriteTo(ctx, x+1, y+1+i, ntx, style)
-		if i >= maxheight-4 {
-			break
+	for i := 0; i < maxheight-3; i++ {
+		utils.WriteTo(ctx, x+1, y+1+i, "|", style)
+
+		if i < len(render_targets) {
+			utils.WriteTo(ctx, x+1+2, y+1+i, render_targets[i], style)
 		}
 	}
 
-	status := fmt.Sprintf("(%s Note) RENOTE: %d | FAVOURITES: %d", layer.VisiblityToText(note.Visiblity), note.RenoteCount, note.ReactionCount)
+	status_parts := []string{}
+	if note.RenoteCount > 0 {
+		status_parts = append(status_parts, fmt.Sprintf("RENOTE: %d", note.RenoteCount))
+	}
+	if note.ReactionCount > 0 {
+		status_parts = append(status_parts, fmt.Sprintf("FAVOURITES: %d", note.ReactionCount))
+	}
+
+	status := fmt.Sprintf("(%s Note) %s", layer.VisiblityToText(note.Visiblity), strings.Join(status_parts, " | "))
 	utils.WriteTo(ctx, x+1, y+maxheight-2, status, style)
 }
